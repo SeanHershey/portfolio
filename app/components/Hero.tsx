@@ -107,7 +107,6 @@ function HeroContent() {
 export default function Hero() {
   return (
     <div className="flex flex-col items-center relative w-full border-b border-neutral-800">
-      {/* Books carousel with hero content */}
       <div className="absolute inset-0 z-0 mt-12">
         <Books heroContent={<HeroContent />} />
       </div>
@@ -118,7 +117,6 @@ export default function Hero() {
         }}
       />
       
-      {/* Languages at bottom - stays fixed */}
       <motion.div 
         className="flex items-center gap-4 flex-wrap justify-center text-sm text-neutral-300 mt-auto mb-6 z-10 absolute bottom-0"
         initial={{ opacity: 0 }}
@@ -152,7 +150,6 @@ export default function Hero() {
         ))}
       </motion.div>
       
-      {/* Spacer to maintain section height */}
       <div className="h-[600px] md:h-[700px]" />
     </div>
   );

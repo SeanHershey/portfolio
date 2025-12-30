@@ -11,9 +11,8 @@ export default function Books({ heroContent }: {
   const heroRef = useRef<HTMLDivElement>(null);
   const cssRendererRef = useRef<CSS3DRenderer | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const numPositions = 7; // 6 books + 1 hero slot
+  const numPositions = 7;
   const anglePerPosition = (Math.PI * 2) / numPositions;
-  // Start rotation positions hero slot (position 0) in front of camera
   const startRotation = -Math.PI / 2;
   const stateRef = useRef({
     currentIndex: 0,
@@ -37,14 +36,13 @@ export default function Books({ heroContent }: {
 
   useEffect(() => {
     if (!containerRef.current) return;
+    
+    const container = containerRef.current;
 
-    // Scene setup
     const scene = new THREE.Scene();
     
-    // Add fog for depth effect - fades to background color
     scene.fog = new THREE.Fog(0x0a0a0a, 1800, 4500);
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(
       60,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
@@ -54,7 +52,6 @@ export default function Books({ heroContent }: {
     camera.position.set(0, 500, 2650);
     camera.lookAt(0, 500, 0);
 
-    // CSS3D Renderer (for hero content)
     const cssRenderer = new CSS3DRenderer();
     cssRendererRef.current = cssRenderer;
     cssRenderer.setSize(
@@ -65,10 +62,9 @@ export default function Books({ heroContent }: {
     cssRenderer.domElement.style.top = '0';
     cssRenderer.domElement.style.left = '0';
     cssRenderer.domElement.style.pointerEvents = 'none';
-    cssRenderer.domElement.style.zIndex = '2'; // Start on top (hero in front)
+    cssRenderer.domElement.style.zIndex = '2';
     containerRef.current.appendChild(cssRenderer.domElement);
 
-    // WebGL Renderer (for 3D books)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(
       containerRef.current.clientWidth,
@@ -77,14 +73,13 @@ export default function Books({ heroContent }: {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setClearColor(0x0a0a0a, 0); // Transparent background
+    renderer.setClearColor(0x0a0a0a, 0);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
     renderer.domElement.style.zIndex = '1';
     containerRef.current.appendChild(renderer.domElement);
 
-    // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
@@ -95,12 +90,10 @@ export default function Books({ heroContent }: {
     directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
 
-    // Subtle rim light
     const rimLight = new THREE.DirectionalLight(0x8fa0fe, 0.3);
     rimLight.position.set(-500, 500, -500);
     scene.add(rimLight);
 
-    // Create group for carousel (books + hero)
     const boxes: THREE.Mesh[] = [];
     const boxGroup = new THREE.Group();
     boxGroupRef.current = boxGroup;
@@ -109,10 +102,8 @@ export default function Books({ heroContent }: {
     const boxHeight = 1000;
     const boxDepth = 100;
 
-    // Book data: color and spine image (null = hero slot)
-    // Position 0 is hero, other positions are books
     const bookData: (null | { color: number; spine: string })[] = [
-      null, // Position 0: Hero content slot
+      null,
       { color: 0x151515, spine: '/books/2001.png' },           // 2001: A Space Odyssey
       { color: 0xFBBA27, spine: '/books/onceandfuture.png' }, // The Once and Future King
       { color: 0x025BAB, spine: '/books/lefthand.png' }, // Left Hand of Darkness
@@ -123,21 +114,18 @@ export default function Books({ heroContent }: {
 
     const textureLoader = new THREE.TextureLoader();
 
-    // Create book cover texture with grain/leather effect
     const createBookTexture = (baseColor: number) => {
       const canvas = document.createElement('canvas');
       canvas.width = 512;
       canvas.height = 512;
       const ctx = canvas.getContext('2d')!;
       
-      // Base color
       const r = (baseColor >> 16) & 255;
       const g = (baseColor >> 8) & 255;
       const b = baseColor & 255;
       ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
       ctx.fillRect(0, 0, 512, 512);
-      
-      // Add leather/cloth grain texture
+
       for (let i = 0; i < 15000; i++) {
         const x = Math.random() * 512;
         const y = Math.random() * 512;
@@ -150,7 +138,6 @@ export default function Books({ heroContent }: {
         ctx.fillRect(x, y, size, size);
       }
       
-      // Add subtle horizontal lines (like book binding)
       ctx.strokeStyle = `rgba(0, 0, 0, 0.1)`;
       ctx.lineWidth = 1;
       for (let y = 0; y < 512; y += 8) {
@@ -160,7 +147,6 @@ export default function Books({ heroContent }: {
         ctx.stroke();
       }
       
-      // Add edge wear effect (darker edges)
       const gradient = ctx.createRadialGradient(256, 256, 100, 256, 256, 350);
       gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
@@ -173,7 +159,6 @@ export default function Books({ heroContent }: {
       return texture;
     };
 
-    // Create bump map for texture depth
     const createBumpMap = () => {
       const canvas = document.createElement('canvas');
       canvas.width = 256;
@@ -183,7 +168,6 @@ export default function Books({ heroContent }: {
       ctx.fillStyle = '#808080';
       ctx.fillRect(0, 0, 256, 256);
       
-      // Add noise for bump
       for (let i = 0; i < 8000; i++) {
         const x = Math.random() * 256;
         const y = Math.random() * 256;
@@ -200,23 +184,18 @@ export default function Books({ heroContent }: {
 
     const bumpMap = createBumpMap();
 
-    // Create hero CSS3D object at position 0
     if (heroRef.current) {
       const heroElement = heroRef.current;
       const cssObject = new CSS3DObject(heroElement);
       
-      // Position at slot 0 (angle = 0)
       const heroAngle = 0;
       cssObject.position.x = Math.cos(heroAngle) * radius;
       cssObject.position.z = Math.sin(heroAngle) * radius;
       cssObject.position.y = boxHeight / 2;
       
-      // Face the center
       cssObject.lookAt(0, boxHeight / 2, 0);
-      // Rotate 180 degrees to face outward (toward camera)
       cssObject.rotateY(Math.PI);
       
-      // Scale to be prominent in 3D space
       cssObject.scale.set(1.8, 1.8, 1.8);
       
       boxGroup.add(cssObject);
@@ -234,17 +213,11 @@ export default function Books({ heroContent }: {
       const { color, spine } = book;
       const bookTexture = createBookTexture(color);
       
-      // Load spine texture
       const spineTexture = textureLoader.load(spine);
       spineTexture.colorSpace = THREE.SRGBColorSpace;
-      // Scale up slightly to remove white edges
       spineTexture.repeat.set(0.92, 0.96);
       spineTexture.offset.set(0.04, 0.02);
-      
-      // Create materials for each face of the box
-      // Order: right (+x), left (-x), top (+y), bottom (-y), front (+z), back (-z)
-      // Right/Left are the narrow sides (100 x 1000) - both show spine
-      // Front/Back are the main cover faces (700 x 1000)
+
       const coverMaterial = new THREE.MeshStandardMaterial({
         map: bookTexture,
         bumpMap: bumpMap,
@@ -253,7 +226,6 @@ export default function Books({ heroContent }: {
         metalness: 0.05,
       });
       
-      // Spine material (narrow sides with book spine image)
       const spineMaterial = new THREE.MeshStandardMaterial({
         map: spineTexture,
         bumpMap: bumpMap,
@@ -262,14 +234,13 @@ export default function Books({ heroContent }: {
         metalness: 0.05,
       });
       
-      // Array of 6 materials for the 6 faces
       const materials = [
-        spineMaterial,  // right (+x) - spine (narrow side 100x1000)
-        spineMaterial,  // left (-x) - spine (narrow side 100x1000)
-        coverMaterial,  // top (+y)
-        coverMaterial,  // bottom (-y)
-        coverMaterial,  // front (+z) - main cover face
-        coverMaterial,  // back (-z) - main cover face
+        spineMaterial,
+        spineMaterial,
+        coverMaterial,
+        coverMaterial,
+        coverMaterial,
+        coverMaterial,
       ];
 
       const box = new THREE.Mesh(geometry, materials);
@@ -287,7 +258,6 @@ export default function Books({ heroContent }: {
       boxGroup.add(box);
     }
 
-    // Add wireframe edges
     boxes.forEach((box) => {
       const edges = new THREE.EdgesGeometry(box.geometry);
       const lineMaterial = new THREE.LineBasicMaterial({ 
@@ -301,14 +271,12 @@ export default function Books({ heroContent }: {
 
     scene.add(boxGroup);
 
-    // Animation loop with smooth interpolation
     let animationId: number;
     const state = stateRef.current;
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       
-      // Smooth interpolation toward target rotation
       const diff = state.targetRotation - state.currentRotation;
       if (Math.abs(diff) > 0.001) {
         state.currentRotation += diff * 0.08;
@@ -318,8 +286,6 @@ export default function Books({ heroContent }: {
       
       boxGroup.rotation.y = state.currentRotation;
       
-      // Dynamically set z-index based on hero position
-      // Hero is in front when at position 0 (currentIndex === 0)
       const heroInFront = state.currentIndex === 0;
       cssRenderer.domElement.style.zIndex = heroInFront ? '2' : '0';
       
@@ -329,12 +295,10 @@ export default function Books({ heroContent }: {
 
     animate();
 
-    // Mark as loaded after first render
     requestAnimationFrame(() => {
       setIsLoaded(true);
     });
 
-    // Handle resize
     const handleResize = () => {
       if (!containerRef.current) return;
       
@@ -352,17 +316,16 @@ export default function Books({ heroContent }: {
 
     window.addEventListener("resize", handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationId);
       renderer.dispose();
-      if (containerRef.current) {
-        if (renderer.domElement.parentNode === containerRef.current) {
-          containerRef.current.removeChild(renderer.domElement);
+      if (container) {
+        if (renderer.domElement.parentNode === container) {
+          container.removeChild(renderer.domElement);
         }
-        if (cssRenderer.domElement.parentNode === containerRef.current) {
-          containerRef.current.removeChild(cssRenderer.domElement);
+        if (cssRenderer.domElement.parentNode === container) {
+          container.removeChild(cssRenderer.domElement);
         }
       }
     };
@@ -373,7 +336,6 @@ export default function Books({ heroContent }: {
       className="relative w-full h-full"
       style={{ background: '#0a0a0a' }}
     >
-      {/* Hidden hero content that will be used by CSS3DRenderer */}
       <div 
         ref={heroRef}
         className="pointer-events-auto"
@@ -395,7 +357,6 @@ export default function Books({ heroContent }: {
         }}
       />
       
-      {/* Left click zone */}
       <button
         onClick={() => rotateToBook("left")}
         className="absolute left-0 top-0 w-1/3 h-full cursor-w-resize opacity-0 hover:opacity-100 transition-opacity pointer-events-auto z-50"
@@ -408,7 +369,6 @@ export default function Books({ heroContent }: {
         </div>
       </button>
       
-      {/* Right click zone */}
       <button
         onClick={() => rotateToBook("right")}
         className="absolute right-0 top-0 w-1/3 h-full cursor-e-resize opacity-0 hover:opacity-100 transition-opacity pointer-events-auto z-50"

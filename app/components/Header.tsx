@@ -36,7 +36,7 @@ export default function Header() {
           whileTap={{ scale: 0.95 }}
         >
           <Link href="/" className="rounded-lg p-2 bg-neutral-900 block">
-            <Image src="/favicon.ico" alt="Sean Hershey" width={24} height={24} />
+            <Image src="/icon.svg" alt="Sean Hershey" width={24} height={24} />
           </Link>
         </motion.div>
         <ul className="flex items-center gap-4 text-sm">
