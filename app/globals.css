@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f1f1f1;
+  --foreground: #0A0A0A;
+}
+
+@theme inline {
+
+  --color-leaf: #00ff55;
+  --color-leaf-dark: #318F55;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-bakbak: var(--font-bakbak);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0A0A0A;
+    --foreground: #f1f1f1;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+
+.font-bakbak {
+  font-family: var(--font-bakbak);
+  font-weight: 400;
+}
